@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-with, initial-scale=1.0">
+    <title>Экстремальные виды спорта</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .mapa-interactivo {
+            padding: 2rem 0 4rem o;
+            background-color: var(--bg);
+            color: var(--text);
+            text-align: center;
+        }
+
+        .mapa-contenedor {
+            position: relative;
+            max-width: 1200px;
+            margin: 2rem auto;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #0a1a2a;
+        }
+
+        .mapa-base {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .marcador {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .punto {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 8px var(--accent));
+            transition: transform 0.2s;
+            display: block;
+        }
+
+        .punto:hover {
+            transform: scale(1.4);
+        }
+
+        .info-lugar {
+             position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 1rem;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+            color: var(--text);
+            text-align: left;
+            pointer-events: none;
+        }
+
+        .info-lugar::after {
+             content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -8px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: var(--accent) transparent transparent transparent;
+        }
+
+        .info-lugar h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-lugar p {
+            color: var(--text);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-lugar img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            margin-top: 0.5rem;
+        }
+
+        .marcador:hover .info-lugar {
+            display: block;
+        }
+
+        @media (max-width:768px) {
+            .punto {font-size: 1.8rem; }
+            .info-lugar { width: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <a href="index.html" class="logo">🏄 ExtremeSports</a>
+                <ul class="nav-menu">
+                    <li><a href="index.html">✈️Главная</a></li>
+                    <li><a href="pages/tierra.html">Земля</a></li>
+                    <li><a href="pages/agua.html">Вода</a></li>
+                    <li><a href="pages/cielo.html">Небо</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="mapa-interactivo">
+            <div class="container">
+                <h1>🌍Мир экстремальных видов спорта</h1>
+                <div style="text-align: justify; max-width: 1000px; margin: 0 auto 1rem auto; color: var(--gray);">
+                    <p style="text-align: justify; margin-bottom: 1rem; font-weight: bold; color: var(--gray)">
+                        С незапамятных времен человечество испытывало потребность бросать вызов собственным пределам. Будь то восхождение на гору, прыжок в пропасть или покорение гигантской волны, мы всегда искали ту искру волнения, которая заставляет нас чувствовать себя по-настоящему живыми. Экстремальные виды спорта родились из этого стремления: доведение тела и разума до предела в естественной или городской среде, где риск и адреналин становятся нашими лучшими спутниками.
+                    </p>
+
+                    <p style="text-align: justify; margin-bottom: 1rem; font-weight: bold; color: var(--gray)">
+                        Речь идет не только об опасности, но и о личностном росте, свободе и связи с природой. Каждый прыжок, каждый заплыв, каждое восхождение — это победа над страхом и доказательство того, что мы способны на большее, чем когда-либо могли себе представить.
+                    </p>
+
+                    <p style="margin-bottom: 1rem; font-weight: bold; color: var(--gray);">
+                        Если вы только начинаете исследовать этот мир, вот некоторые виды активного отдыха, о которых вы, вероятно, уже слышали:
+                    </p>
+
+                    <ol style="margin-left: 2rem; line-height: 2;">
+                       <li><strong>Серфинг:</strong> катание на гигантских волнах на доске.</li>
+                       <li><strong>Скалолазание:</strong> восхождение по скалам или искусственным стенам.</li>
+                       <li><strong>Прыжки с парашютом:</strong> прыжок с самолета и полет в свободном падении.</li>
+                       <li><strong>Рафтинг:</strong> спуск по бурным рекам на плоту со снаряжением.</li>
+                       <li><strong>Горный велосипед (MTB):</strong> езда на велосипеде по горам и тропам.</li>
+                       <li><strong>Дайвинг:</strong> исследование глубин океана.</li>
+                       <li><strong>Банджи-джампинг:</strong> прыжок в пропасть с моста, будучи прикрепленным к эластичному тросу.</li>
+                        <li><strong>Кайтсерфинг:</strong> скольжение по воде с помощью кайта.</li>
+                    </ol>                 
+                
+                    <p style="margin: 1.5rem 0; font-style: italic; text-align: center; color: var(--gray);">
+                        Зачем их практиковать?🚀
+                    </p>
+
+                    <p style="text-align: justify; margin-bottom: 1rem; font-weight: bold; color: var(--gray);">
+                        Потому что они заставляют тебя чувствовать себя живым. Потому что нет ничего лучше учащенного сердцебиения перед прыжком, спокойствия парения в воздухе или удовлетворения от достижения вершины после огромных усилий. Экстремальные виды спорта не только бросают вызов физически, но и учат тебя контролировать страх, доверять себе и наслаждаться настоящим моментом как никогда раньше.
+                    </p>
+                    
+                    <p style="text-align: justify; margin-bottom: 1rem; font-weight: bold; color: var(--gray);">
+                        Осмелитесь ли вы попробовать? Первый шаг — получить информацию, соблюдать меры безопасности и, самое главное, позволить себе окунуться в мир приключений. Мир полон невероятных мест, которые ждут своего открытия. Осмелитесь ли вы жить полной жизнью! 
+                    </p>
+
+                    <p style="margin-top: 2rem; text-align: center; font-weight: bold; color: var(--gray);">
+                        Нажмите на карту, чтобы увидеть несколько примеров.
+                    </p>
+                </div>
+                
+                <div class="mapa-contenedor">
+                    <img src="img/Principal/mapamundi.jpg" class="mapa-base">
+
+                    <div class="marcador" style="top: 32%; left: 80%;">
+                        <span class="punto">🐉</span>
+                        <div class="info-lugar">
+                            <h4>Китай - Чжанцзяцзе</h4>
+                            <p>Взбираясь на колонны «Аватара».</p>
+                            <img src="img/Principal/china.jpg">
+                        </div>
+                    </div>
+                    
+                    <div class="marcador" style="top: 52%; left: 28%;">
+                        <span class="punto">🗿</span>
+                        <div class="info-lugar">
+                            <h4>Перу - Уарац</h4>
+                            <p>Восхождение в Андах. Вершины высотой 6000 м.</p>
+                            <img src="img/Principal/peru.jpg">
+                        </div>
+                    </div>
+
+                    <div class="marcador" style="top: 68%; left: 30%;">
+                        <span class="punto">🌵</span>
+                        <div class="info-lugar">
+                            <h4>Чили - Долина Невадо</h4>
+                            <p>Катание на лыжах и сноуборде.</p>
+                            <img src="img/Principal/chile.jpg">
+                        </div>
+                    </div>
+
+                    <div class="marcador" style="top: 16%; left: 52%;">
+                        <span class="punto">⚓</span>
+                        <div class="info-lugar">
+                            <h4>Норвегия - Фьорды</h4>
+                            <p>Ныряние в кристально чистых водах.</p>
+                            <img src="img/Principal/noruega.jpg">
+                        </div>
+                    </div>
+
+                    <div class="marcador" style="top: 65%; left: 85%;">
+                        <span class="punto">🦘</span>
+                        <div class="info-lugar">
+                            <h4>Австралия - Голд-Кост</h4>
+                            <p>Серфинг мирового класса.</p>
+                            <img src="img/Principal/australia.jpg">
+                        </div>
+                    </div>
+
+                    <div class="marcador" style="top: 75%; left: 97%;">
+                        <span class="punto">🥝</span>
+                        <div class="info-lugar">
+                            <h4>Новая Зеландия - Милфорд-Саунд</h4>
+                            <p>Каякинг среди фьордов.</p>
+                            <img src="img/Principal/nuevazelanda.jpg">
+                        </div>
+                    </div>
+
+                    <div class="marcador" style="top: 58%; left: 37%;">
+                        <span class="punto">🌴</span>
+                        <div class="info-lugar">
+                            <h4>Бразилия - Рио-де-Жанейро</h4>
+                            <p>Бейсджампинг с горы Шугарлоф.</p>
+                            <img src="img/Principal/brazil.jpg">
+                        </div>
+                    </div>
+
+                    <div class="marcador" style="top: 18%; left: 75%;">
+                        <span class="punto">❄️</span>
+                        <div class="info-lugar">
+                            <h4>Россия - Камчатка</h4>
+                            <p>Параглайдинг над вулканами.</p>
+                            <img src="img/Principal/rusia.jpg">
+                        </div>
+                    </div>
+
+                    <div class="marcador" style="top: 38%; left: 73%;">
+                        <span class="punto">🏔️</span>
+                        <div class="info-lugar">
+                            <h4>Непал - Гималаи</h4>
+                            <p>Прыжки с парашютом над Эверестом.</p>
+                            <img src="img/Principal/nepal.jpg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section style="padding:  2rem 0;">
+            <div class="container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">категории</h2>
+        </section>
+        
+        <section style="padding: 2rem 0;">
+            <div class="container">
+                <div class="categories-grid">
+                    <a href="pages/tierra.html" class="category-card">
+                        <img src="img/Principal/cardearth.jpg" alt="Земля">
+                        <h3>Земля</h3>
+                        <p>Горы, снег, скалы</p>
+                    </a>
+                    <a href="pages/agua.html" class="category-card">
+                        <img src="img/Principal/cardwater.jpg" alt="Вода">
+                        <h3>Вода</h3>
+                        <p>Океан, волны, глубина</p>
+                    </a>
+                    <a href="pages/cielo.html" class="category-card">
+                        <img src="img/Principal/cardsky.jpg" alt="Небо">
+                        <h3>Небо</h3>
+                        <p>Высота, полёт, свобода</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <a href="pages/games.html">
+                <img src="img/Pedro/pedro.gif" style="width: 60px; border-radius: 50%; margin-bottom: 10px; cursor: pointer">
+            </a>
+            <p>&copy; 2026 ExtremeSports. Все права защищены от Nikynikokatze.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.marcador').forEach(marcador => {
+            marcador.addEventListener('click', function(e) {
+                e.stopPropagation();
+
+                 document.querySelectorAll('.info-lugar').forEach(info => {
+                    if (info !== this.querySelector('.info-lugar')) {
+                        info.style.display = 'none';
+                    }
+                 });
+
+                  let info = this.querySelector('.info-lugar');
+                if (info.style.display === 'block') {
+                    info.style.display = 'none';
+                } else {
+                    info.style.display = 'block';
+                }
+            });
+        });
+
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.info-lugar').forEach(info => {
+                info.style.display = 'none';
+            });
+        });
+    </script>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

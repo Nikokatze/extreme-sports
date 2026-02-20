@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DIVE - Help Pedro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        .game-container {
+            background: #0a2f44;
+            border: 3px solid #4d9eff;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 0 30px #4d9eff;
+        }
+        canvas {
+            border: 2px solid #4d9eff;
+            background: linear-gradient(135deg, #1a7faa, #0a4f7a);
+            display: block;
+            margin: 0 auto;
+            width: 600px;
+            height: 600px;
+            box-shadow: 0 0 20px #4d9eff;
+            transition: filter 0.3s;
+        }
+        .canvas-low-oxygen {
+            filter: drop-shadow(0 0 20px red) brightness(1.2);
+            animation: oxygenShake 0.1s infinite;
+        }
+        @keyframes oxygenShake {
+            0% { transform: translate(1px, 1px); }
+            10% { transform: translate(-1px, -2px); }
+            20% { transform: translate(-3px, 0px); }
+            30% { transform: translate(3px, 2px); }
+            40% { transform: translate(1px, -1px); }
+            50% { transform: translate(-1px, 2px); }
+            60% { transform: translate(-3px, 1px); }
+            70% { transform: translate(3px, 1px); }
+            80% { transform: translate(-1px, -1px); }
+            90% { transform: translate(1px, 2px); }
+            100% { transform: translate(1px, -2px); }
+        }
+        .panel {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            color: #88ccff;
+            font-size: 1.2rem;
+            background: #0a2f44;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin: 5px 0;
+            color: #88ccff;
+            font-size: 0.9rem;
+            background: #0a2f44;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .oxygen-container {
+            margin: 5px 0;
+        }
+        .oxygen-bar {
+            width: 100%;
+            height: 15px;
+            background: #222;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #4d9eff;
+        }
+        .oxygen-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4d9eff, #88ccff);
+            width: 100%;
+            transition: width 0.3s;
+        }
+        .oxygen-fill.low {
+            background: linear-gradient(90deg, #ff6b6b, #ff4444);
+        }
+        button {
+            background: #4d9eff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover { background: #3a7bff; }
+        .victory-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .victory-box {
+            background: #0a2f44;
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 0 50px #ffd700;
+            max-width: 500px;
+        }
+        .victory-box h2 {
+            color: #ffd700;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .victory-box .pedro-dance {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 15px auto;
+            overflow: hidden;
+            border: 3px solid #ffd700;
+            animation: spin 4s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .victory-box .pedro-dance img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .victory-box p {
+            color: white;
+            font-size: 1.3rem;
+            margin: 15px 0;
+        }
+        .victory-box input {
+            padding: 8px;
+            font-size: 1rem;
+            background: #222;
+            color: white;
+            border: 2px solid #ffd700;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            width: 80%;
+        }
+        .victory-box button {
+            background: #ffd700;
+            color: black;
+            font-size: 1.3rem;
+            padding: 10px 20px;
+            margin: 5px;
+        }
+        .game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .game-over-box {
+            background: #0a2f44;
+            border: 3px solid #ff6b6b;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+        .game-over-box .emoji {
+            font-size: 5rem;
+            margin: 20px;
+        }
+        .game-over-box button {
+            background: #ff6b6b;
+            font-size: 1.3rem;
+            padding: 10px 20px;
+            margin-top: 15px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 5px 0;
+            color: #ffd700;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 style="font-size: 1.8rem;">🤿 DIVE - Help Pedro</h1>
+        
+        <div class="panel">
+            <span>Score: <span id="score">1000</span></span>
+            <span>Prey: <span id="preyCount">0</span>/40</span>
+            <span id="oxygenTime">90s</span>
+        </div>
+        
+        <div class="oxygen-container">
+            <div class="oxygen-bar">
+                <div class="oxygen-fill" id="oxygenBar" style="width: 100%"></div>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <span>🦀 Crabs: <span id="crabCount">0</span></span>
+            <span>🐟 Fish: <span id="fishCount">0</span></span>
+            <span>🦐 Shrimp: <span id="shrimpCount">0</span></span>
+            <span>🦞 Lobster: <span id="lobsterCount">0</span></span>
+        </div>
+        <div class="stats">
+            <span>🤿 Snorkels: <span id="snorkelCount">0</span>/8</span>
+        </div>
+        
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+        
+        <div class="controls">
+            <span>←↑→↓ Move</span>
+            <span>␣ SPACE to grab snorkel / talk to octopus</span>
+        </div>
+        
+        <button onclick="restartGame()">🔄 RESTART</button>
+        <button onclick="window.location.href='games.html'">🎮 BACK TO GAMES</button>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div class="game-over-overlay" id="gameOverOverlay">
+        <div class="game-over-box">
+            <h2>💀 GAME OVER</h2>
+            <div class="emoji" id="gameOverEmoji">🐡</div>
+            <p id="gameOverMessage"></p>
+            <button onclick="restartGame()">🔄 TRY AGAIN</button>
+        </div>
+    </div>
+
+    <!-- Victory Overlay -->
+    <div class="victory-overlay" id="victoryOverlay">
+        <div class="victory-box">
+            <h2>🎉 VICTORY! 🎉</h2>
+            <div class="pedro-dance">
+                <img src="../img/Pedro/pedro.gif" alt="Pedro dancing">
+            </div>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <input type="text" id="winnerName" placeholder="Enter your name (optional)" maxlength="20">
+            <div>
+                <button onclick="saveAndContinue()">💾 SAVE</button>
+                <button onclick="goToGames()">⏩ SKIP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio for victory song -->
+    <audio id="victorySong" preload="auto" loop>
+        <source src="../img/Pedro/cancionpedro.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Game setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Map size - 42x42
+        const MAP_SIZE = 42;
+        
+        // Viewport size - 20x20 visible
+        const VIEW_SIZE = 20;
+        
+        // Calculate tile size to fit canvas
+        const TILE_SIZE = 30; // 600/20 = 30
+        
+        // Center player in map
+        let player = { x: 21, y: 21 };
+        
+        // Load Pedro image
+        let pedroImg = new Image();
+        pedroImg.src = '../img/Pedro/pedrope.jpg';
+        
+        // Game state arrays
+        let crabs = [];
+        let fish = [];
+        let shrimp = [];
+        let lobster = [];
+        let snorkels = [];
+        let pufferfish = [];
+        let oxygenCorals = [];
+        let decorativeCorals = [];
+        let algae = [];
+        
+        // Special objects
+        let octopus = null;
+        let chest = null;
+        let boat = null;
+        
+        // Player inventory
+        let preyCount = 0;
+        let crabsCaught = 0;
+        let fishCaught = 0;
+        let shrimpCaught = 0;
+        let lobsterCaught = 0;
+        let snorkelsCollected = 0;
+        
+        // Puntaje - EMPIEZA EN 1000
+        let score = 1000;
+        let scoreDecayTimer = 0;
+        const SCORE_DECAY_INTERVAL = 60; // 1 punto por segundo normal
+        
+        // Prey totals (random each game)
+        let totalCrabs = 0;
+        let totalFish = 0;
+        let totalShrimp = 0;
+        let totalLobster = 0;
+        const TOTAL_PREY = 40;
+        
+        // Oxygen - 90 seconds
+        let oxygen = 90;
+        const MAX_OXYGEN = 90;
+        
+        // Game state
+        let gameActive = true;
+        
+        // Oxygen mechanics
+        let oxygenTimer = 0;
+        const OXYGEN_DECAY_INTERVAL = 60;
+        let lowOxygenMode = false;
+        
+        // Nearby items
+        let nearbySnorkel = null;
+        let nearOctopus = false;
+        
+        // Victory condition
+        let allPreyCollected = false;
+        let octopusAppeared = false;
+        
+        // ===== UTILITY FUNCTIONS =====
+        function getDistance(x1, y1, x2, y2) {
+            return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+        }
+        
+        function isPositionFree(x, y, excludeArrays = []) {
+            // Check map boundaries
+            if (x < 1 || x >= MAP_SIZE - 1 || y < 1 || y >= MAP_SIZE - 1) return false;
+            
+            // Check all exclude arrays
+            for (let arr of excludeArrays) {
+                for (let item of arr) {
+                    if (getDistance(item.x, item.y, x, y) < 2) return false;
+                }
+            }
+            return true;
+        }
+        
+        // ===== SHOW GAME OVER =====
+        function showGameOver(emoji, message) {
+            gameActive = false;
+            document.getElementById('gameOverEmoji').textContent = emoji;
+            document.getElementById('gameOverMessage').textContent = message;
+            document.getElementById('gameOverOverlay').style.display = 'flex';
+        }
+        
+        // ===== GENERATE RANDOM PREY DISTRIBUTION =====
+        function generatePreyDistribution() {
+            // Random distribution that sums to 40
+            totalCrabs = Math.floor(Math.random() * 15) + 5; // 5-19
+            totalFish = Math.floor(Math.random() * 15) + 5; // 5-19
+            totalShrimp = Math.floor(Math.random() * 10) + 3; // 3-12
+            totalLobster = TOTAL_PREY - (totalCrabs + totalFish + totalShrimp);
+            
+            // Ensure minimum for lobster
+            if (totalLobster < 2) {
+                totalLobster = 2;
+                // Adjust others
+                let excess = (totalCrabs + totalFish + totalShrimp + totalLobster) - TOTAL_PREY;
+                if (excess > 0) {
+                    if (totalCrabs > 5) totalCrabs -= Math.floor(excess / 3);
+                    if (totalFish > 5) totalFish -= Math.floor(excess / 3);
+                    if (totalShrimp > 3) totalShrimp -= Math.floor(excess / 3);
+                }
+            }
+            
+            console.log(`Prey distribution: Crabs:${totalCrabs} Fish:${totalFish} Shrimp:${totalShrimp} Lobster:${totalLobster}`);
+        }
+        
+        // ===== INITIALIZE GAME =====
+        function initGame() {
+            console.log("Initializing game...");
+            
+            // Generate random prey distribution
+            generatePreyDistribution();
+            
+            // Reset all arrays
+            crabs = [];
+            fish = [];
+            shrimp = [];
+            lobster = [];
+            snorkels = [];
+            pufferfish = [];
+            oxygenCorals = [];
+            decorativeCorals = [];
+            algae = [];
+            
+            // Create crabs
+            for (let i = 0; i < totalCrabs; i++) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    let x = 2 + Math.random() * (MAP_SIZE - 4);
+                    let y = 2 + Math.random() * (MAP_SIZE - 4);
+                    if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish])) {
+                        crabs.push({x, y});
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            
+            // Create fish
+            for (let i = 0; i < totalFish; i++) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    let x = 2 + Math.random() * (MAP_SIZE - 4);
+                    let y = 2 + Math.random() * (MAP_SIZE - 4);
+                    if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish])) {
+                        fish.push({x, y});
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            
+            // Create shrimp
+            for (let i = 0; i < totalShrimp; i++) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    let x = 2 + Math.random() * (MAP_SIZE - 4);
+                    let y = 2 + Math.random() * (MAP_SIZE - 4);
+                    if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish])) {
+                        shrimp.push({x, y});
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            
+            // Create lobster
+            for (let i = 0; i < totalLobster; i++) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    let x = 2 + Math.random() * (MAP_SIZE - 4);
+                    let y = 2 + Math.random() * (MAP_SIZE - 4);
+                    if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish])) {
+                        lobster.push({x, y});
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            
+            // Create 8 snorkels
+            for (let i = 0; i < 8; i++) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    let x = 2 + Math.random() * (MAP_SIZE - 4);
+                    let y = 2 + Math.random() * (MAP_SIZE - 4);
+                    if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish])) {
+                        snorkels.push({x, y});
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            
+            // Create 12 pufferfish
+            for (let i = 0; i < 12; i++) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    let x = 2 + Math.random() * (MAP_SIZE - 4);
+                    let y = 2 + Math.random() * (MAP_SIZE - 4);
+                    if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish])) {
+                        pufferfish.push({x, y});
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            
+            // Create 6 oxygen corals (with bubbles)
+            for (let i = 0; i < 6; i++) {
+                let attempts = 0;
+                while (attempts < 500) {
+                    let x = 3 + Math.random() * (MAP_SIZE - 6);
+                    let y = 3 + Math.random() * (MAP_SIZE - 6);
+                    if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish, oxygenCorals])) {
+                        let bubbles = [];
+                        for (let b = 0; b < 3; b++) {
+                            let angle = (b * 120) * Math.PI / 180;
+                            bubbles.push({
+                                x: x + Math.cos(angle) * 1.5,
+                                y: y + Math.sin(angle) * 1.5,
+                                collected: false
+                            });
+                        }
+                        oxygenCorals.push({x, y, bubbles});
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+            
+            // Create decorative corals and algae along borders
+            for (let i = 0; i < 20; i++) {
+                let x = Math.random() * (MAP_SIZE - 2) + 1;
+                let y = 1; // Top border
+                if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish, oxygenCorals, decorativeCorals])) {
+                    decorativeCorals.push({x, y, type: 'coral'});
+                }
+                
+                x = Math.random() * (MAP_SIZE - 2) + 1;
+                y = MAP_SIZE - 2; // Bottom border
+                if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish, oxygenCorals, decorativeCorals])) {
+                    decorativeCorals.push({x, y, type: 'coral'});
+                }
+                
+                y = Math.random() * (MAP_SIZE - 2) + 1;
+                x = 1; // Left border
+                if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish, oxygenCorals, decorativeCorals])) {
+                    decorativeCorals.push({x, y, type: 'coral'});
+                }
+                
+                y = Math.random() * (MAP_SIZE - 2) + 1;
+                x = MAP_SIZE - 2; // Right border
+                if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish, oxygenCorals, decorativeCorals])) {
+                    decorativeCorals.push({x, y, type: 'coral'});
+                }
+            }
+            
+            // Random decorative algae
+            for (let i = 0; i < 30; i++) {
+                let x = 2 + Math.random() * (MAP_SIZE - 4);
+                let y = 2 + Math.random() * (MAP_SIZE - 4);
+                if (isPositionFree(x, y, [crabs, fish, shrimp, lobster, snorkels, pufferfish, oxygenCorals, decorativeCorals])) {
+                    algae.push({x, y});
+                }
+            }
+            
+            // Reset player
+            player = { x: 21, y: 21 };
+            
+            // Reset inventory
+            preyCount = 0;
+            crabsCaught = 0;
+            fishCaught = 0;
+            shrimpCaught = 0;
+            lobsterCaught = 0;
+            snorkelsCollected = 0;
+            
+            // Reset puntaje a 1000
+            score = 1000;
+            scoreDecayTimer = 0;
+            
+            oxygen = MAX_OXYGEN;
+            
+            // Reset game objects
+            octopus = null;
+            chest = null;
+            boat = null;
+            
+            // Reset flags
+            allPreyCollected = false;
+            octopusAppeared = false;
+            nearbySnorkel = null;
+            nearOctopus = false;
+            
+            // Reset visual effects
+            canvas.classList.remove('canvas-low-oxygen');
+            
+            console.log(`Game initialized. Total prey: ${crabs.length + fish.length + shrimp.length + lobster.length}`);
+            updateDisplay();
+        }
+        
+        // ===== UPDATE DISPLAY =====
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('preyCount').textContent = preyCount;
+            document.getElementById('crabCount').textContent = crabsCaught;
+            document.getElementById('fishCount').textContent = fishCaught;
+            document.getElementById('shrimpCount').textContent = shrimpCaught;
+            document.getElementById('lobsterCount').textContent = lobsterCaught;
+            document.getElementById('snorkelCount').textContent = snorkelsCollected;
+            
+            // Update oxygen display
+            let oxygenPercent = (oxygen / MAX_OXYGEN) * 100;
+            document.getElementById('oxygenBar').style.width = oxygenPercent + '%';
+            document.getElementById('oxygenTime').textContent = oxygen + 's';
+            
+            // Low oxygen effect
+            if (oxygen <= 20 && oxygen > 0 && gameActive) {
+                canvas.classList.add('canvas-low-oxygen');
+                lowOxygenMode = true;
+                document.getElementById('oxygenBar').classList.add('low');
+            } else {
+                canvas.classList.remove('canvas-low-oxygen');
+                lowOxygenMode = false;
+                document.getElementById('oxygenBar').classList.remove('low');
+            }
+        }
+        
+        // ===== CHECK NEARBY ITEMS =====
+        function checkNearbyItems() {
+            // Check snorkels
+            nearbySnorkel = null;
+            for (let snorkel of snorkels) {
+                let dist = getDistance(player.x, player.y, snorkel.x, snorkel.y);
+                if (dist < 2) {
+                    nearbySnorkel = snorkel;
+                    break;
+                }
+            }
+            
+            // Check octopus (double size)
+            nearOctopus = false;
+            if (octopus) {
+                let dist = getDistance(player.x, player.y, octopus.x, octopus.y);
+                nearOctopus = dist < 3;
+            }
+        }
+        
+        // ===== INTERACT =====
+        function interact() {
+            if (!gameActive) return;
+            
+            // Talk to octopus if all prey collected
+            if (nearOctopus && allPreyCollected) {
+                octopus = null;
+                let angle = Math.random() * Math.PI * 2;
+                chest = {
+                    x: player.x + Math.cos(angle) * 2,
+                    y: player.y + Math.sin(angle) * 2
+                };
+                return;
+            }
+            
+            // Grab snorkel
+            if (nearbySnorkel) {
+                for (let i = 0; i < snorkels.length; i++) {
+                    if (snorkels[i] === nearbySnorkel) {
+                        snorkels.splice(i, 1);
+                        break;
+                    }
+                }
+                oxygen = Math.min(oxygen + 7, MAX_OXYGEN);
+                snorkelsCollected++;
+                updateDisplay();
+                nearbySnorkel = null;
+            }
+        }
+        
+        // ===== COLLECT BUBBLE =====
+        function collectBubble(coralIndex, bubbleIndex) {
+            let coral = oxygenCorals[coralIndex];
+            if (coral && coral.bubbles[bubbleIndex] && !coral.bubbles[bubbleIndex].collected) {
+                coral.bubbles[bubbleIndex].collected = true;
+                oxygen = Math.min(oxygen + 3, MAX_OXYGEN);
+                updateDisplay();
+                return true;
+            }
+            return false;
+        }
+        
+        // ===== CONTROLS =====
+        document.addEventListener('keydown', (e) => {
+            if (!gameActive) return;
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                interact();
+                return;
+            }
+            
+            let newX = player.x;
+            let newY = player.y;
+            let moveSpeed = 1.0;
+            
+            switch(e.key) {
+                case 'ArrowLeft': newX -= moveSpeed; break;
+                case 'ArrowRight': newX += moveSpeed; break;
+                case 'ArrowUp': newY -= moveSpeed; break;
+                case 'ArrowDown': newY += moveSpeed; break;
+                default: return;
+            }
+            
+            // Keep within bounds
+            newX = Math.max(1, Math.min(MAP_SIZE - 1, newX));
+            newY = Math.max(1, Math.min(MAP_SIZE - 1, newY));
+            
+            player.x = newX;
+            player.y = newY;
+            
+            checkNearbyItems();
+            
+            // Collect oxygen coral bubbles
+            for (let c = 0; c < oxygenCorals.length; c++) {
+                let coral = oxygenCorals[c];
+                for (let b = 0; b < coral.bubbles.length; b++) {
+                    let bubble = coral.bubbles[b];
+                    if (!bubble.collected) {
+                        let dist = getDistance(player.x, player.y, bubble.x, bubble.y);
+                        if (dist < 1.2) {
+                            collectBubble(c, b);
+                        }
+                    }
+                }
+            }
+            
+            // Collect crabs
+            for (let i = crabs.length - 1; i >= 0; i--) {
+                let crab = crabs[i];
+                let dist = getDistance(player.x, player.y, crab.x, crab.y);
+                if (dist < 1.5) {
+                    crabsCaught++;
+                    preyCount++;
+                    score += 50; // +50 puntos por cangrejo
+                    crabs.splice(i, 1);
+                    updateDisplay();
+                }
+            }
+            
+            // Collect fish
+            for (let i = fish.length - 1; i >= 0; i--) {
+                let f = fish[i];
+                let dist = getDistance(player.x, player.y, f.x, f.y);
+                if (dist < 1.5) {
+                    fishCaught++;
+                    preyCount++;
+                    score += 30; // +30 puntos por pez
+                    fish.splice(i, 1);
+                    updateDisplay();
+                }
+            }
+            
+            // Collect shrimp
+            for (let i = shrimp.length - 1; i >= 0; i--) {
+                let s = shrimp[i];
+                let dist = getDistance(player.x, player.y, s.x, s.y);
+                if (dist < 1.5) {
+                    shrimpCaught++;
+                    preyCount++;
+                    score += 20; // +20 puntos por camarón
+                    shrimp.splice(i, 1);
+                    updateDisplay();
+                }
+            }
+            
+            // Collect lobster
+            for (let i = lobster.length - 1; i >= 0; i--) {
+                let l = lobster[i];
+                let dist = getDistance(player.x, player.y, l.x, l.y);
+                if (dist < 1.5) {
+                    lobsterCaught++;
+                    preyCount++;
+                    score += 100; // +100 puntos por langosta
+                    lobster.splice(i, 1);
+                    updateDisplay();
+                }
+            }
+            
+            // Check if all prey collected
+            if (preyCount >= TOTAL_PREY && !octopusAppeared) {
+                allPreyCollected = true;
+                octopusAppeared = true;
+                let angle = Math.random() * Math.PI * 2;
+                octopus = {
+                    x: player.x + Math.cos(angle) * 4,
+                    y: player.y + Math.sin(angle) * 4
+                };
+            }
+            
+            // Check pufferfish - instant death
+            for (let i = pufferfish.length - 1; i >= 0; i--) {
+                let p = pufferfish[i];
+                let dist = getDistance(player.x, player.y, p.x, p.y);
+                if (dist < 1.5) {
+                    gameActive = false;
+                    showGameOver('🐡', 'Pedro was poisoned by a pufferfish!');
+                }
+            }
+            
+            // Check chest
+            if (chest) {
+                let dist = getDistance(player.x, player.y, chest.x, chest.y);
+                if (dist < 2) {
+                    chest = null;
+                    let angle = Math.random() * Math.PI * 2;
+                    boat = {
+                        x: player.x + Math.cos(angle) * 2.5,
+                        y: player.y + Math.sin(angle) * 2.5
+                    };
+                }
+            }
+            
+            // Check boat
+            if (boat) {
+                let dist = getDistance(player.x, player.y, boat.x, boat.y);
+                if (dist < 2) {
+                    gameActive = false;
+                    localStorage.setItem('diveCompleted', 'true');
+                    localStorage.setItem('lastDiveScore', score);
+                    document.getElementById('finalScore').textContent = score;
+                    victorySong.play();
+                    document.getElementById('victoryOverlay').style.display = 'flex';
+                }
+            }
+            
+            e.preventDefault();
+        });
+        
+        // ===== DRAW GAME =====
+        function draw() {
+            ctx.clearRect(0, 0, 600, 600);
+            
+            // Ocean background
+            ctx.fillStyle = '#1a7faa';
+            ctx.fillRect(0, 0, 600, 600);
+            
+            // Calculate viewport (center on player)
+            const viewMinX = player.x - VIEW_SIZE/2;
+            const viewMinY = player.y - VIEW_SIZE/2;
+            
+            // Function to convert world to screen coordinates
+            function screenX(worldX) { return (worldX - viewMinX) * TILE_SIZE; }
+            function screenY(worldY) { return (worldY - viewMinY) * TILE_SIZE; }
+            
+            // Only draw if within view
+            function isInView(x, y) {
+                return x >= viewMinX && x <= viewMinX + VIEW_SIZE && 
+                       y >= viewMinY && y <= viewMinY + VIEW_SIZE;
+            }
+            
+            // Draw decorative algae
+            algae.forEach(a => {
+                if (isInView(a.x, a.y)) {
+                    let x = screenX(a.x);
+                    let y = screenY(a.y);
+                    ctx.globalAlpha = 0.6;
+                    ctx.font = '20px Arial';
+                    ctx.fillStyle = '#2e8b57';
+                    ctx.fillText('🌿', x, y + 15);
+                    ctx.fillStyle = 'white';
+                    ctx.globalAlpha = 1;
+                }
+            });
+            
+            // Draw decorative corals
+            decorativeCorals.forEach(c => {
+                if (isInView(c.x, c.y)) {
+                    let x = screenX(c.x);
+                    let y = screenY(c.y);
+                    ctx.globalAlpha = 0.8;
+                    ctx.font = '25px Arial';
+                    ctx.fillStyle = '#cd5c5c';
+                    ctx.fillText('🪸', x, y + 20);
+                    ctx.fillStyle = 'white';
+                    ctx.globalAlpha = 1;
+                }
+            });
+            
+            // Draw oxygen corals and bubbles
+            oxygenCorals.forEach(coral => {
+                if (isInView(coral.x, coral.y)) {
+                    let x = screenX(coral.x);
+                    let y = screenY(coral.y);
+                    
+                    ctx.font = '30px Arial';
+                    ctx.fillText('🪸', x, y + 25);
+                    
+                    coral.bubbles.forEach(bubble => {
+                        if (!bubble.collected && isInView(bubble.x, bubble.y)) {
+                            let bx = screenX(bubble.x);
+                            let by = screenY(bubble.y);
+                            ctx.font = '20px Arial';
+                            ctx.fillStyle = '#88ccff';
+                            ctx.fillText('🫧', bx, by + 15);
+                            ctx.fillStyle = 'white';
+                        }
+                    });
+                }
+            });
+            
+            // Draw snorkels
+            snorkels.forEach(snorkel => {
+                if (isInView(snorkel.x, snorkel.y)) {
+                    let x = screenX(snorkel.x);
+                    let y = screenY(snorkel.y);
+                    if (nearbySnorkel === snorkel) {
+                        ctx.shadowColor = '#88ccff';
+                        ctx.shadowBlur = 15;
+                    }
+                    ctx.font = '30px Arial';
+                    ctx.fillText('🤿', x, y + 25);
+                    ctx.shadowBlur = 0;
+                }
+            });
+            
+            // Draw pufferfish
+            pufferfish.forEach(p => {
+                if (isInView(p.x, p.y)) {
+                    let x = screenX(p.x);
+                    let y = screenY(p.y);
+                    ctx.font = '30px Arial';
+                    ctx.fillText('🐡', x, y + 25);
+                }
+            });
+            
+            // Draw crabs
+            crabs.forEach(crab => {
+                if (isInView(crab.x, crab.y)) {
+                    let x = screenX(crab.x);
+                    let y = screenY(crab.y);
+                    ctx.font = '30px Arial';
+                    ctx.fillText('🦀', x, y + 25);
+                }
+            });
+            
+            // Draw fish
+            fish.forEach(f => {
+                if (isInView(f.x, f.y)) {
+                    let x = screenX(f.x);
+                    let y = screenY(f.y);
+                    ctx.font = '30px Arial';
+                    ctx.fillText('🐟', x, y + 25);
+                }
+            });
+            
+            // Draw shrimp
+            shrimp.forEach(s => {
+                if (isInView(s.x, s.y)) {
+                    let x = screenX(s.x);
+                    let y = screenY(s.y);
+                    ctx.font = '30px Arial';
+                    ctx.fillText('🦐', x, y + 25);
+                }
+            });
+            
+            // Draw lobster
+            lobster.forEach(l => {
+                if (isInView(l.x, l.y)) {
+                    let x = screenX(l.x);
+                    let y = screenY(l.y);
+                    ctx.font = '30px Arial';
+                    ctx.fillText('🦞', x, y + 25);
+                }
+            });
+            
+            // Draw octopus (double size)
+            if (octopus && allPreyCollected && isInView(octopus.x, octopus.y)) {
+                let x = screenX(octopus.x);
+                let y = screenY(octopus.y);
+                if (nearOctopus) {
+                    ctx.shadowColor = '#ffd700';
+                    ctx.shadowBlur = 20;
+                }
+                ctx.font = '60px Arial';
+                ctx.fillText('🐙', x, y + 40);
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw chest
+            if (chest && isInView(chest.x, chest.y)) {
+                let x = screenX(chest.x);
+                let y = screenY(chest.y);
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 20;
+                ctx.font = '40px Arial';
+                ctx.fillText('🎁', x, y + 30);
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw boat
+            if (boat && isInView(boat.x, boat.y)) {
+                let x = screenX(boat.x);
+                let y = screenY(boat.y);
+                ctx.shadowColor = '#4d9eff';
+                ctx.shadowBlur = 30;
+                ctx.font = '45px Arial';
+                ctx.fillText('⛵', x, y + 35);
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw Pedro
+            if (isInView(player.x, player.y)) {
+                let pedroX = screenX(player.x);
+                let pedroY = screenY(player.y);
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(pedroX + 15, pedroY + 15, 13, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                
+                if (pedroImg.complete) {
+                    ctx.drawImage(pedroImg, pedroX, pedroY, 30, 30);
+                } else {
+                    ctx.fillStyle = '#8B4513';
+                    ctx.beginPath();
+                    ctx.arc(pedroX + 15, pedroY + 15, 13, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+                
+                // Interaction indicators
+                if (nearbySnorkel) {
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText('PRESS SPACE', pedroX, pedroY - 15);
+                }
+                if (nearOctopus && allPreyCollected) {
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText('TALK (SPACE)', pedroX, pedroY - 15);
+                }
+            }
+        }
+        
+        // ===== GAME LOOP =====
+        function gameLoop() {
+            if (!gameActive) {
+                draw();
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            
+            // Oxygen decay
+            oxygenTimer++;
+            if (oxygenTimer >= OXYGEN_DECAY_INTERVAL) {
+                oxygenTimer = 0;
+                oxygen = Math.max(0, oxygen - 1);
+                updateDisplay();
+                
+                if (oxygen <= 0) {
+                    gameActive = false;
+                    showGameOver('🫧', 'Pedro ran out of oxygen!');
+                }
+            }
+            
+            // Score decay normal - 1 punto por segundo siempre
+            scoreDecayTimer++;
+            if (scoreDecayTimer >= SCORE_DECAY_INTERVAL) {
+                score = Math.max(0, score - 1);
+                document.getElementById('score').textContent = score;
+                scoreDecayTimer = 0;
+            }
+            
+            // Penalización extra por oxígeno bajo (≤10)
+            if (oxygen <= 10 && oxygen > 0) {
+                // Cada segundo que esté en rojo, -5 puntos adicionales
+                if (oxygenTimer % 60 === 0) { // Cada segundo
+                    score = Math.max(0, score - 5);
+                    document.getElementById('score').textContent = score;
+                }
+            }
+            
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // ===== VICTORY FUNCTIONS =====
+        function saveAndContinue() {
+            let name = document.getElementById('winnerName').value.trim();
+            if (name) {
+                let records = JSON.parse(localStorage.getItem('diveRecords')) || [];
+                records.push({
+                    name: name,
+                    score: score,
+                    date: new Date().toLocaleDateString()
+                });
+                records.sort((a, b) => b.score - a.score);
+                if (records.length > 10) records = records.slice(0, 10);
+                localStorage.setItem('diveRecords', JSON.stringify(records));
+            }
+            goToGames();
+        }
+        
+        function goToGames() {
+            window.location.href = 'games.html';
+        }
+        
+        function restartGame() {
+            gameActive = true;
+            document.getElementById('gameOverOverlay').style.display = 'none';
+            document.getElementById('victoryOverlay').style.display = 'none';
+            victorySong.pause();
+            victorySong.currentTime = 0;
+            initGame();
+        }
+        
+        // Start the game
+        window.onload = function() {
+            console.log("Window loaded, initializing game...");
+            initGame();
+            gameLoop();
+        };
+        
+        // Fallback if onload doesn't fire
+        initGame();
+        gameLoop();
+    </script>
+</body>
+</html>

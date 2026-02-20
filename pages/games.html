@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Games - Help the Raccoon</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .game-card {
+            background: var(--card-bg);
+            border: 2px solid var(--accent);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            position: relative;
+        }
+        .game-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .game-card:hover:not(.locked) {
+            transform: scale(1.05);
+            background: var(--card-hover);
+        }
+        .game-card h2 {
+            color: var(--accent);
+            margin: 1rem 0;
+        }
+        .pedro-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto;
+            display: block;
+            border: 3px solid var(--accent);
+        }
+        .record-badge {
+            color: #ffd700;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        .lock-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+        }
+        .global-ranking {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .global-ranking h2 {
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .ranking-item .name {
+            color: var(--text);
+        }
+        .ranking-item .time {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .ranking-item .game {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        .story {
+            text-align: center;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 10px;
+        }
+        #saveSection {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            text-align: center;
+            display: none;
+        }
+        #saveSection input {
+            padding: 10px;
+            font-size: 1rem;
+            background: #222;
+            color: white;
+            border: 2px solid #ffd700;
+            border-radius: 5px;
+            margin-right: 10px;
+            width: 200px;
+        }
+        #saveSection button {
+            background: #ffd700;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <a href="../index.html" class="logo">🦝 Help Pedro</a>
+                <ul class="nav-menu">
+                    <li><a href="../index.html">Home</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="story">
+            <img src="../img/Pedro/pedrito.jpg" style="width: 100px; border-radius: 50%; margin-bottom: 1rem;">
+            <h1>Help Pedro the Raccoon!</h1>
+            <p>Pedro loves extreme sports but got trapped in dangerous places.<br>
+            Help him escape! Complete them all!</p>
+            <p style="color: var(--accent); margin-top: 1rem;">⭐❤️ You have 3 lives in each game. luck! ❤️⭐</p>
+        </div>
+
+        <div class="games-grid">
+            <!-- Game 1: Cave -->
+            <div class="game-card" onclick="playGame('cave')" id="game1">
+                <h2>🦇 Cave</h2>
+                <p>Dodge falling rocks</p>
+                <div class="record-badge">🏆 Score: <span id="recordCave">0</span></div>
+                <div id="status1" style="color: #4dff4d;">✅ READY</div>
+            </div>
+
+            <!-- Game 2: Ski -->
+            <div class="game-card locked" onclick="checkUnlock(2)" id="game2">
+                <div class="lock-icon">🔒</div>
+                <h2>⛷️ Ski</h2>
+                <p>Prepare properly for the occasion</p>
+                <div class="record-badge">🏆 Score: <span id="recordSki">0</span></div>
+                <div id="status2" style="color: var(--gray);">🔒 Complete Cave first</div>
+            </div>
+
+            <!-- Game 3: Dive -->
+            <div class="game-card locked" onclick="checkUnlock(3)" id="game3">
+                <div class="lock-icon">🔒</div>
+                <h2>🤿 Dive</h2>
+                <p>Catch food, avoid poisonous fish</p>
+                <div class="record-badge">🏆 Score: <span id="recordDive">0</span></div>
+                <div id="status3" style="color: var(--gray);">🔒 Complete Ski first</div>
+            </div>
+        </div>
+
+        <!-- Save Section for completing all games -->
+        <div id="saveSection">
+            <h2 style="color: #ffd700;">🏆 YOU COMPLETED ALL GAMES! 🏆</h2>
+            <p>Enter your name for the Hall of Fame:</p>
+            <input type="text" id="playerName" placeholder="Your name" maxlength="20">
+            <button onclick="saveGlobalRecord()">💾 SAVE</button>
+        </div>
+
+        <!-- GLOBAL RANKING -->
+        <div class="global-ranking">
+            <h2>🏆 GLOBAL HALL OF FAME</h2>
+            <div id="globalRanking">
+                <!-- Se llena con JavaScript -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Help Pedro. All rights reserved by Nikynikokatze.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ===== CARGAR PROGRESO Y PUNTAJES =====
+        function loadGameProgress() {
+            // Cargar scores de las partidas
+            document.getElementById('recordCave').textContent = localStorage.getItem('lastCaveScore') || '0';
+            document.getElementById('recordSki').textContent = localStorage.getItem('lastSkiScore') || '0';
+            document.getElementById('recordDive').textContent = localStorage.getItem('lastDiveScore') || '0';
+            
+            // Verificar juegos completados
+            let caveCompleted = localStorage.getItem('caveCompleted') === 'true';
+            let skiCompleted = localStorage.getItem('skiCompleted') === 'true';
+            
+            console.log('Cave completed:', caveCompleted);
+            console.log('Ski completed:', skiCompleted);
+            
+            // Actualizar UI de desbloqueo
+            if (caveCompleted) {
+                document.getElementById('game2').classList.remove('locked');
+                document.getElementById('game2').setAttribute('onclick', "playGame('ski')");
+                document.getElementById('status2').innerHTML = '✅ READY';
+                document.getElementById('status2').style.color = '#4dff4d';
+                document.querySelector('#game2 .lock-icon').style.display = 'none';
+            }
+            
+            if (skiCompleted) {
+                document.getElementById('game3').classList.remove('locked');
+                document.getElementById('game3').setAttribute('onclick', "playGame('dive')");
+                document.getElementById('status3').innerHTML = '✅ READY';
+                document.getElementById('status3').style.color = '#4dff4d';
+                document.querySelector('#game3 .lock-icon').style.display = 'none';
+            }
+            
+            // Verificar si completó los 3
+            checkAllGamesCompleted();
+        }
+
+        // ===== VERIFICAR SI COMPLETÓ LOS 3 JUEGOS =====
+        function checkAllGamesCompleted() {
+            let caveCompleted = localStorage.getItem('caveCompleted') === 'true';
+            let skiCompleted = localStorage.getItem('skiCompleted') === 'true';
+            let diveCompleted = localStorage.getItem('diveCompleted') === 'true';
+            
+            if (caveCompleted && skiCompleted && diveCompleted) {
+                document.getElementById('saveSection').style.display = 'block';
+            }
+        }
+
+        // ===== GUARDAR RÉCORD GLOBAL =====
+        function saveGlobalRecord() {
+            let name = document.getElementById('playerName').value.trim() || 'Anonymous';
+            let date = new Date().toLocaleDateString();
+            
+            let globalRankings = JSON.parse(localStorage.getItem('globalHallOfFame')) || [];
+            
+            globalRankings.push({ 
+                name: name, 
+                date: date,
+                cave: localStorage.getItem('lastCaveScore') || 0,
+                ski: localStorage.getItem('lastSkiScore') || 0,
+                dive: localStorage.getItem('lastDiveScore') || 0
+            });
+            
+            // Ordenar por puntaje total
+            globalRankings.sort((a, b) => {
+                let totalA = (parseInt(a.cave) || 0) + (parseInt(a.ski) || 0) + (parseInt(a.dive) || 0);
+                let totalB = (parseInt(b.cave) || 0) + (parseInt(b.ski) || 0) + (parseInt(b.dive) || 0);
+                return totalB - totalA;
+            });
+            
+            if (globalRankings.length > 20) globalRankings = globalRankings.slice(0, 20);
+            localStorage.setItem('globalHallOfFame', JSON.stringify(globalRankings));
+            
+            document.getElementById('saveSection').style.display = 'none';
+            loadGlobalRanking();
+            alert('✅ Record saved to Hall of Fame!');
+        }
+
+        // ===== CARGAR HALL OF FAME GLOBAL =====
+        function loadGlobalRanking() {
+            let globalRankings = JSON.parse(localStorage.getItem('globalHallOfFame')) || [];
+            let html = '';
+            
+            globalRankings.slice(0, 10).forEach((item, index) => {
+                let total = (parseInt(item.cave) || 0) + (parseInt(item.ski) || 0) + (parseInt(item.dive) || 0);
+                html += `
+                    <div class="ranking-item">
+                        <span class="name">${index+1}. ${item.name}</span>
+                        <span>
+                            <span class="time">${total} pts</span>
+                            <span class="game">${item.date}</span>
+                        </span>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('globalRanking').innerHTML = html || '<p style="text-align: center; color: var(--gray);">No records yet</p>';
+        }
+
+        // ===== FUNCIONES DE NAVEGACIÓN =====
+        function playGame(game) {
+            window.location.href = game + '.html';
+        }
+
+        function checkUnlock(gameNum) {
+            let caveCompleted = localStorage.getItem('caveCompleted') === 'true';
+            let skiCompleted = localStorage.getItem('skiCompleted') === 'true';
+            
+            if (gameNum === 2 && !caveCompleted) {
+                alert('❌ Complete Cave first!');
+            } else if (gameNum === 3 && !skiCompleted) {
+                alert('❌ Complete Ski first!');
+            }
+        }
+
+        // ===== INICIALIZACIÓN =====
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGameProgress();
+            loadGlobalRanking();
+        });
+        
+    </script>
+</body>
+</html>

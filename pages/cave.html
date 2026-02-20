@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CAVE LABYRINTH - Help Pedro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        .game-container {
+            background: #111;
+            border: 3px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #ff6b6b;
+            background: #1a1a1a;
+            display: block;
+            margin: 0 auto;
+            width: 600px;
+            height: 360px;
+        }
+        .panel {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            color: #888;
+            font-size: 1.2rem;
+        }
+        .lives { color: #ff6b6b; font-size: 1.5rem; }
+        .warning-text {
+            color: #ff0000;
+            font-size: 4rem;
+            font-weight: bold;
+            text-shadow: 0 0 30px red, 0 0 60px orange;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 100;
+            animation: pulse 0.3s infinite;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        .shake-canvas {
+            animation: shake 0.1s infinite;
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            10% { transform: translate(-1px, -2px); }
+            20% { transform: translate(-3px, 0px); }
+            30% { transform: translate(3px, 2px); }
+            40% { transform: translate(1px, -1px); }
+            50% { transform: translate(-1px, 2px); }
+            60% { transform: translate(-3px, 1px); }
+            70% { transform: translate(3px, 1px); }
+            80% { transform: translate(-1px, -1px); }
+            90% { transform: translate(1px, 2px); }
+            100% { transform: translate(1px, -2px); }
+        }
+        .stunned {
+            color: #4d9eff;
+            font-size: 2rem;
+            font-weight: bold;
+            display: none;
+            margin: 10px 0;
+        }
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover { background: #ff5252; }
+        .progress {
+            color: #4d9eff;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+        .victory-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .victory-box {
+            background: #111;
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 50px #ffd700;
+            max-width: 500px;
+        }
+        .victory-box h2 {
+            color: #ffd700;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .victory-box p {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .victory-box .score {
+            color: #ffd700;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .victory-box button {
+            background: #ffd700;
+            color: black;
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .victory-box button:hover {
+            background: #ffed4a;
+        }
+        .victory-box input {
+            padding: 10px;
+            font-size: 1.2rem;
+            background: #222;
+            color: white;
+            border: 2px solid #ffd700;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            width: 80%;
+        }
+        .help-text {
+            color: #ff6b6b;
+            font-size: 1.2rem;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🦇 CAVE LABYRINTH</h1>
+        <div class="panel">
+            <span class="lives" id="lives">❤️❤️❤️</span>
+            <span>Bottles: <span id="bottles">0</span>/10</span>
+            <span>Score: <span id="score">1000</span></span>
+        </div>
+        
+        <div class="panel">
+            <span>Pickaxe: <span id="pickaxe">❌</span></span>
+            <span class="stunned" id="stunnedMsg">⚡ PEDRO IS STUNNED! ⚡</span>
+        </div>
+        
+        <div style="position: relative; display: inline-block;">
+            <canvas id="gameCanvas" width="600" height="360"></canvas>
+            <div class="warning-text" id="warningText">⚠️ BE CAREFUL ⚠️</div>
+        </div>
+        
+        <div class="help-text">🦝 Help him escape</div>
+        <div class="progress" id="progress">Depth: 60/60</div>
+        
+        <button onclick="restartGame()">🔄 RESTART</button>
+        <button onclick="window.location.href='games.html'">🎮 BACK TO GAMES</button>
+    </div>
+
+    <!-- Victory Overlay -->
+    <div class="victory-overlay" id="victoryOverlay">
+        <div class="victory-box">
+            <h2>CONGRATULATIONS!</h2>
+            <p>You saved Pedro!</p>
+            <div class="score" id="finalScore">Score: 1000</div>
+            <input type="text" id="winnerName" placeholder="Enter your name" maxlength="20">
+            <div>
+                <button onclick="saveAndContinue()">💾 SAVE</button>
+                <button onclick="skipAndContinue()">⏩ SKIP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Map size
+        const TILE_SIZE = 30;
+        const MAP_WIDTH = 20;
+        const MAP_HEIGHT = 60;
+        
+        // Viewport size
+        const VIEWPORT_HEIGHT = 12;
+        
+        // Camera
+        let cameraY = 0;
+        
+        // Load images
+        let pedroImg = new Image();
+        pedroImg.src = '../img/Pedro/pedrope.jpg';
+        
+        let rockImg = new Image();
+        rockImg.src = '../img/Pedro/rock.png';
+        
+        // Game state
+        let map = [];
+        let player = { x: 10, y: MAP_HEIGHT - 2 };
+        let bottles = [];
+        let pickaxe = null;
+        let pickaxeRevealed = false;
+        let shelters = [];
+        let spiders = [];
+        let exitX = 10;
+        let exitY = 1;
+        
+        // Player status
+        let lives = 3;
+        let score = 1000;
+        let bottlesCollected = 0;
+        let hasPickaxe = false;
+        let gameActive = true;
+        
+        // Score decay - 1 point every 1 second
+        let scoreDecayTimer = 0;
+        const SCORE_DECAY_INTERVAL = 60;
+        
+        // Stun
+        let stunned = false;
+        let stunTimer = 0;
+        
+        // Rock mechanics - 35 seconds
+        let rockWarning = false;
+        let rockCountdown = 0;
+        let timeToNextRock = 35 * 60;
+        let rockActive = false;
+        let rockFade = 0;
+        
+        // ===== GENERATE MAZE =====
+        function generateMap() {
+            let newMap = Array(MAP_HEIGHT).fill().map(() => Array(MAP_WIDTH).fill(1));
+            
+            newMap[player.y][player.x] = 0;
+            
+            function carveMaze(x, y, depth = 0) {
+                const dirs = [
+                    [0, -2], [0, 2], [-2, 0], [2, 0]
+                ].sort(() => Math.random() - 0.5);
+                
+                for (let [dx, dy] of dirs) {
+                    let nx = x + dx;
+                    let ny = y + dy;
+                    
+                    if (nx > 0 && nx < MAP_WIDTH-1 && ny > 0 && ny < MAP_HEIGHT-1 && newMap[ny][nx] === 1) {
+                        if (Math.random() < 0.7 || depth < 3) {
+                            newMap[ny][nx] = 0;
+                            newMap[y + dy/2][x + dx/2] = 0;
+                            carveMaze(nx, ny, depth + 1);
+                        }
+                    }
+                }
+            }
+            
+            carveMaze(player.x, player.y);
+            newMap[exitY][exitX] = 0;
+            
+            return newMap;
+        }
+        
+        // ===== CHECK REACHABILITY =====
+        function isReachable(targetX, targetY) {
+            let queue = [{x: player.x, y: player.y}];
+            let visited = Array(MAP_HEIGHT).fill().map(() => Array(MAP_WIDTH).fill(false));
+            visited[player.y][player.x] = true;
+            
+            while (queue.length > 0) {
+                let {x, y} = queue.shift();
+                
+                if (x === targetX && y === targetY) return true;
+                
+                const dirs = [[0,1], [0,-1], [1,0], [-1,0]];
+                for (let [dx, dy] of dirs) {
+                    let nx = x + dx;
+                    let ny = y + dy;
+                    if (nx >= 0 && nx < MAP_WIDTH && ny >= 0 && ny < MAP_HEIGHT && 
+                        map[ny][nx] === 0 && !visited[ny][nx]) {
+                        visited[ny][nx] = true;
+                        queue.push({x: nx, y: ny});
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // ===== GENERATE SHELTERS =====
+        function generateShelters() {
+            shelters = [];
+            
+            let directions = [
+                {dx: 0, dy: -1}, {dx: 0, dy: -2}, {dx: 1, dy: -1}, {dx: -1, dy: -1},
+                {dx: 0, dy: 1}, {dx: 0, dy: 2}, {dx: 1, dy: 1}, {dx: -1, dy: 1}
+            ];
+            
+            directions.sort(() => Math.random() - 0.5);
+            
+            let aheadPlaced = 0;
+            for (let dir of directions) {
+                if (aheadPlaced >= 2) break;
+                if (dir.dy < 0) {
+                    let nx = player.x + dir.dx;
+                    let ny = player.y + dir.dy;
+                    
+                    if (nx > 0 && nx < MAP_WIDTH-1 && ny > 0 && ny < MAP_HEIGHT-1 && 
+                        map[ny][nx] === 1 && !shelters.some(s => s.x === nx && s.y === ny) &&
+                        Math.random() < 0.6) {
+                        shelters.push({x: nx, y: ny});
+                        aheadPlaced++;
+                    }
+                }
+            }
+            
+            let behindPlaced = 0;
+            for (let dir of directions) {
+                if (behindPlaced >= 2) break;
+                if (dir.dy > 0) {
+                    let nx = player.x + dir.dx;
+                    let ny = player.y + dir.dy;
+                    
+                    if (nx > 0 && nx < MAP_WIDTH-1 && ny > 0 && ny < MAP_HEIGHT-1 && 
+                        map[ny][nx] === 1 && !shelters.some(s => s.x === nx && s.y === ny) &&
+                        Math.random() < 0.6) {
+                        shelters.push({x: nx, y: ny});
+                        behindPlaced++;
+                    }
+                }
+            }
+        }
+        
+        // ===== PLACE ITEMS =====
+        function placeItemInReachableArea(excludePositions = []) {
+            let attempts = 0;
+            let placed = false;
+            let x, y;
+            
+            while (!placed && attempts < 500) {
+                x = Math.floor(Math.random() * (MAP_WIDTH-2)) + 1;
+                y = Math.floor(Math.random() * (MAP_HEIGHT-2)) + 1;
+                
+                if (map[y][x] === 0 && 
+                    !(x === player.x && y === player.y) && 
+                    !excludePositions.some(p => p.x === x && p.y === y) &&
+                    isReachable(x, y)) {
+                    placed = true;
+                }
+                attempts++;
+            }
+            
+            return placed ? {x, y} : null;
+        }
+        
+        // ===== INITIALIZE =====
+        function initLevel() {
+            map = generateMap();
+            player = { x: 10, y: MAP_HEIGHT - 2 };
+            updateCamera();
+            
+            bottles = [];
+            let bottlePositions = [];
+            for (let i = 0; i < 10; i++) {
+                let pos = placeItemInReachableArea(bottlePositions);
+                if (pos) {
+                    bottles.push({x: pos.x, y: pos.y, collected: false});
+                    bottlePositions.push(pos);
+                }
+            }
+            
+            pickaxe = null;
+            pickaxeRevealed = false;
+            
+            spiders = [];
+            for (let i = 0; i < 20; i++) {
+                let pos = placeItemInReachableArea([...bottlePositions, ...(pickaxe ? [pickaxe] : [])]);
+                if (pos) {
+                    spiders.push({x: pos.x, y: pos.y});
+                }
+            }
+            
+            timeToNextRock = 35 * 60;
+            rockWarning = false;
+            rockActive = false;
+            stunned = false;
+            hasPickaxe = false;
+            pickaxeRevealed = false;
+            score = 1000;
+            scoreDecayTimer = 0;
+            document.getElementById('score').textContent = '1000';
+            document.getElementById('pickaxe').innerHTML = '❌';
+            document.getElementById('stunnedMsg').style.display = 'none';
+            document.getElementById('warningText').style.display = 'none';
+            canvas.classList.remove('shake-canvas');
+            updateProgress();
+            document.getElementById('victoryOverlay').style.display = 'none';
+        }
+        
+        function updateCamera() {
+            cameraY = player.y - Math.floor(VIEWPORT_HEIGHT / 2);
+            if (cameraY < 0) cameraY = 0;
+            if (cameraY > MAP_HEIGHT - VIEWPORT_HEIGHT) cameraY = MAP_HEIGHT - VIEWPORT_HEIGHT;
+        }
+        
+        function updateProgress() {
+            let depth = MAP_HEIGHT - player.y;
+            document.getElementById('progress').textContent = `Depth: ${depth}/${MAP_HEIGHT-1}`;
+        }
+        
+        function revealPickaxe() {
+            if (pickaxeRevealed) return;
+            pickaxeRevealed = true;
+            let pos = placeItemInReachableArea(bottles.map(b => ({x: b.x, y: b.y})));
+            if (pos) pickaxe = {x: pos.x, y: pos.y};
+        }
+        
+        function stunPlayer() {
+            stunned = true;
+            stunTimer = 120;
+            document.getElementById('stunnedMsg').style.display = 'block';
+        }
+        
+        function startRockWarning() {
+            rockWarning = true;
+            rockCountdown = 300;
+            generateShelters();
+            canvas.classList.add('shake-canvas');
+        }
+        
+        function rockFall() {
+            rockWarning = false;
+            rockActive = true;
+            rockFade = 120;
+            document.getElementById('warningText').style.display = 'block';
+            canvas.classList.remove('shake-canvas');
+            
+            let inShelter = shelters.some(s => s.x === player.x && s.y === player.y);
+            
+            if (!inShelter) {
+                lives--;
+                score = Math.max(0, score - 50);
+                updateLives();
+                stunPlayer();
+                if (lives <= 0) {
+                    gameActive = false;
+                    alert('💀 GAME OVER - Pedro was crushed!');
+                }
+            }
+            
+            document.getElementById('score').textContent = score;
+            timeToNextRock = 35 * 60;
+        }
+        
+        function updateLives() {
+            let hearts = '';
+            for (let i = 0; i < lives; i++) hearts += '❤️';
+            document.getElementById('lives').textContent = hearts;
+        }
+        
+        function goToGames() {
+            window.location.href = 'games.html';
+        }
+        
+        // ===== FUNCIONES DE GUARDADO CORREGIDAS =====
+        function saveAndContinue() {
+            let name = document.getElementById('winnerName').value.trim();
+            
+            // Guardar el score con nombre si se proporcionó
+            if (name) {
+                let records = JSON.parse(localStorage.getItem('caveRecords')) || [];
+                records.push({
+                    name: name,
+                    score: score,
+                    date: new Date().toLocaleDateString()
+                });
+                records.sort((a, b) => b.score - a.score);
+                if (records.length > 10) records = records.slice(0, 10);
+                localStorage.setItem('caveRecords', JSON.stringify(records));
+            }
+            
+            // ¡ESTAS LÍNEAS SON CRUCIALES!
+            localStorage.setItem('caveCompleted', 'true');
+            localStorage.setItem('lastCaveScore', score);
+            
+            console.log('✅ Cave completado! Score:', score);
+            goToGames();
+        }
+        
+        function skipAndContinue() {
+            localStorage.setItem('caveCompleted', 'true');
+            localStorage.setItem('lastCaveScore', score);
+            console.log('✅ Cave completado (skip)! Score:', score);
+            goToGames();
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (!gameActive || stunned) return;
+            
+            let newX = player.x;
+            let newY = player.y;
+            
+            switch(e.key) {
+                case 'ArrowLeft': newX--; break;
+                case 'ArrowRight': newX++; break;
+                case 'ArrowUp': newY--; break;
+                case 'ArrowDown': newY++; break;
+                default: return;
+            }
+            
+            if (newX < 0 || newX >= MAP_WIDTH || newY < 0 || newY >= MAP_HEIGHT) return;
+            if (map[newY][newX] === 1 && !shelters.some(s => s.x === newX && s.y === newY)) return;
+            
+            let wasInShelter = shelters.some(s => s.x === player.x && s.y === player.y);
+            let enteringShelter = shelters.some(s => s.x === newX && s.y === newY);
+            
+            player.x = newX;
+            player.y = newY;
+            updateCamera();
+            updateProgress();
+            
+            let bottleIndex = bottles.findIndex(b => b.x === player.x && b.y === player.y && !b.collected);
+            if (bottleIndex !== -1) {
+                bottles[bottleIndex].collected = true;
+                bottlesCollected++;
+                score += 50;
+                document.getElementById('bottles').textContent = bottlesCollected;
+                document.getElementById('score').textContent = score;
+                if (bottlesCollected >= 4 && !pickaxeRevealed) revealPickaxe();
+            }
+            
+            if (pickaxe && player.x === pickaxe.x && player.y === pickaxe.y) {
+                hasPickaxe = true;
+                pickaxe = null;
+                score += 100;
+                document.getElementById('pickaxe').innerHTML = '✅';
+                document.getElementById('score').textContent = score;
+            }
+            
+            let spiderIndex = spiders.findIndex(s => s.x === player.x && s.y === player.y);
+            if (spiderIndex !== -1) {
+                score = Math.max(0, score - 10);
+                spiders.splice(spiderIndex, 1);
+                document.getElementById('score').textContent = score;
+            }
+            
+            if (hasPickaxe && player.x === exitX && player.y === exitY) {
+                gameActive = false;
+                document.getElementById('finalScore').textContent = `Score: ${score}`;
+                document.getElementById('victoryOverlay').style.display = 'flex';
+            }
+            
+            e.preventDefault();
+        });
+        
+        function draw() {
+            ctx.clearRect(0, 0, 600, 360);
+            
+            for (let y = 0; y < VIEWPORT_HEIGHT; y++) {
+                let mapY = cameraY + y;
+                if (mapY >= MAP_HEIGHT) continue;
+                
+                for (let x = 0; x < MAP_WIDTH; x++) {
+                    let screenX = x * TILE_SIZE;
+                    let screenY = y * TILE_SIZE;
+                    
+                    if (map[mapY][x] === 0) {
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(screenX, screenY, TILE_SIZE-1, TILE_SIZE-1);
+                        
+                        if (x === exitX && mapY === exitY) {
+                            if (hasPickaxe) {
+                                ctx.shadowColor = '#4dff4d';
+                                ctx.shadowBlur = 30;
+                                ctx.fillStyle = '#4dff4d';
+                            } else {
+                                ctx.fillStyle = '#444';
+                            }
+                            ctx.fillRect(screenX, screenY, TILE_SIZE-1, TILE_SIZE-1);
+                            ctx.shadowBlur = 0;
+                            ctx.font = '22px Arial';
+                            ctx.fillStyle = '#fff';
+                            ctx.fillText('🚪', screenX + 5, screenY + 22);
+                        }
+                        
+                        let bottle = bottles.find(b => b.x === x && b.y === mapY && !b.collected);
+                        if (bottle) {
+                            ctx.font = '22px Arial';
+                            ctx.fillText('🍼', screenX + 5, screenY + 22);
+                        }
+                        
+                        if (pickaxe && pickaxe.x === x && pickaxe.y === mapY) {
+                            ctx.shadowColor = '#ffff00';
+                            ctx.shadowBlur = 20;
+                            ctx.font = '22px Arial';
+                            ctx.fillText('⛏️', screenX + 5, screenY + 22);
+                            ctx.shadowBlur = 0;
+                        }
+                        
+                        if (spiders.some(s => s.x === x && s.y === mapY)) {
+                            ctx.font = '22px Arial';
+                            ctx.fillText('🕷️', screenX + 5, screenY + 22);
+                        }
+                    } else {
+                        ctx.fillStyle = '#222';
+                        ctx.fillRect(screenX, screenY, TILE_SIZE-1, TILE_SIZE-1);
+                        
+                        if (shelters.some(s => s.x === x && s.y === mapY)) {
+                            ctx.shadowColor = '#4d9eff';
+                            ctx.shadowBlur = 20;
+                            ctx.fillStyle = '#4d9eff';
+                            ctx.fillRect(screenX, screenY, TILE_SIZE-1, TILE_SIZE-1);
+                            ctx.shadowBlur = 0;
+                            ctx.font = '20px Arial';
+                            ctx.fillStyle = '#fff';
+                            ctx.fillText('⛑️', screenX + 5, screenY + 22);
+                        }
+                    }
+                }
+            }
+            
+            if (rockActive) {
+                ctx.save();
+                ctx.globalAlpha = rockFade / 120;
+                ctx.drawImage(rockImg, 0, 0, 600, 360);
+                ctx.restore();
+                
+                rockFade--;
+                if (rockFade <= 0) {
+                    rockActive = false;
+                    document.getElementById('warningText').style.display = 'none';
+                    shelters = [];
+                }
+            }
+            
+            if (player.y >= cameraY && player.y < cameraY + VIEWPORT_HEIGHT) {
+                let screenY = (player.y - cameraY) * TILE_SIZE;
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(player.x * TILE_SIZE + TILE_SIZE/2, screenY + TILE_SIZE/2, 12, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                
+                if (pedroImg.complete) {
+                    ctx.drawImage(pedroImg, player.x * TILE_SIZE, screenY, TILE_SIZE, TILE_SIZE);
+                } else {
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(player.x * TILE_SIZE, screenY, TILE_SIZE, TILE_SIZE);
+                }
+                ctx.restore();
+            }
+        }
+        
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            if (!stunned && !rockWarning && !rockActive) {
+                scoreDecayTimer++;
+                if (scoreDecayTimer >= SCORE_DECAY_INTERVAL) {
+                    score = Math.max(0, score - 1);
+                    document.getElementById('score').textContent = score;
+                    scoreDecayTimer = 0;
+                }
+            }
+            
+            if (!rockWarning && !rockActive) {
+                timeToNextRock--;
+                if (timeToNextRock <= 300 && !rockWarning) startRockWarning();
+            }
+            
+            if (rockWarning) {
+                rockCountdown--;
+                if (rockCountdown <= 0) rockFall();
+            }
+            
+            if (stunned) {
+                stunTimer--;
+                if (stunTimer <= 0) {
+                    stunned = false;
+                    document.getElementById('stunnedMsg').style.display = 'none';
+                }
+            }
+            
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function restartGame() {
+            lives = 3;
+            bottlesCollected = 0;
+            hasPickaxe = false;
+            gameActive = true;
+            score = 1000;
+            document.getElementById('score').textContent = '1000';
+            document.getElementById('bottles').textContent = '0';
+            document.getElementById('pickaxe').innerHTML = '❌';
+            updateLives();
+            initLevel();
+        }
+        
+        initLevel();
+        updateLives();
+        gameLoop();
+    </script>
+</body>
+</html>
